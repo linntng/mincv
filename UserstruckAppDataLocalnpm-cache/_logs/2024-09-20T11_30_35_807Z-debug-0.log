@@ -1,0 +1,18 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.8.2
+2 info using node@v20.17.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\truck\ingestion-app1\.npmrc
+5 silly config load:file:C:\Users\truck\.npmrc
+6 silly config load:file:C:\Users\truck\ingestion-app1\UserstruckAppDataRoamingnpm\etc\npmrc
+7 verbose title npm run build
+8 verbose argv "run" "build"
+9 verbose logfile logs-max:10 dir:C:\Users\truck\ingestion-app1\UserstruckAppDataLocalnpm-cache\_logs\2024-09-20T11_30_35_807Z-
+10 verbose logfile C:\Users\truck\ingestion-app1\UserstruckAppDataLocalnpm-cache\_logs\2024-09-20T11_30_35_807Z-debug-0.log
+11 silly logfile done cleaning log files
+12 verbose cwd C:\Users\truck\ingestion-app1
+13 verbose os Windows_NT 10.0.22631
+14 verbose node v20.17.0
+15 verbose npm  v10.8.2
+16 verbose exit 0
+17 info ok

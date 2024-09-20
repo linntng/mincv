@@ -7,6 +7,7 @@
 6 silly config load:file:C:\Users\truck\AppData\Roaming\npm\etc\npmrc
 7 verbose title npm start
 8 verbose argv "start"
-9 verbose logfile logs-max:10 dir:C:\Users\truck\ingestion-app1\UserstruckAppDataLocalnpm-cache\_logs\2024-09-20T11_16_47_025Z-
-10 verbose logfile C:\Users\truck\ingestion-app1\UserstruckAppDataLocalnpm-cache\_logs\2024-09-20T11_16_47_025Z-debug-0.log
-11 silly logfile done cleaning log files
+9 verbose logfile logs-max:10 dir:C:\Users\truck\ingestion-app1\UserstruckAppDataLocalnpm-cache\_logs\2024-09-20T13_48_36_823Z-
+10 verbose logfile C:\Users\truck\ingestion-app1\UserstruckAppDataLocalnpm-cache\_logs\2024-09-20T13_48_36_823Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly logfile done cleaning log files

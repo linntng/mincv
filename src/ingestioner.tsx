@@ -14,11 +14,13 @@ import { BlobServiceClient } from "@azure/storage-blob";
 import { InteractiveBrowserCredential } from "@azure/identity";
 import LinnImage from "./Linn.jpeg";
 
+// Tror dette er starten på komponenten min
 const Ingestion = () => {
-  const clientId = "xxx"; // Your Azure AD client ID
-  const tenantId = "xxx"; // Your tenant ID
-  const blobStorageUrl = "https://xxxx.blob.core.windows.net/"; // Blob Storage URL
+  const clientId = "xxx"; // Azure AD klient-ID, må nok få tak i den riktige her
+  const tenantId = "xxx"; // Leietaker-ID, må også endres til riktig
+  const blobStorageUrl = "https://xxxx.blob.core.windows.net/"; // Blob Storage URL, må dobbeltsjekke denne
 
+  // Prøver å sette opp noen state-variabler her
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string>("");
   const [statusType, setStatusType] = useState<MessageBarType>(
@@ -30,34 +32,42 @@ const Ingestion = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isUploadSectionOpen, setIsUploadSectionOpen] = useState(false);
 
+  // Funksjon for når filen endres, håper dette fungerer
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Sjekker om det er valgt en fil
     if (event.target.files && event.target.files.length > 0) {
-      setSelectedFile(event.target.files[0]);
+      setSelectedFile(event.target.files[0]); // Setter den valgte filen
     }
   };
 
+  // Funksjon for å håndtere valg av blob-filer
   const handleBlobSelection = (blobName: string, isSelected: boolean) => {
+    // Oppdaterer listen over valgte blobs
     setSelectedBlobs((prev) =>
       isSelected ? [...prev, blobName] : prev.filter((name) => name !== blobName)
     );
   };
 
+  // Funksjon for å hente navnene på blob-filene fra Azure, usikker på om denne er riktig
   const fetchBlobNames = async (blobServiceClient: BlobServiceClient) => {
     try {
       const containerClient = blobServiceClient.getContainerClient("content");
       const blobs = containerClient.listBlobsFlat();
       const blobList: string[] = [];
+      // Går gjennom alle blobs og legger dem til i listen
       for await (const blob of blobs) {
-        blobList.push(blob.name);
+        blobList.push(blob.name); // Legger til blob-navnet i listen
       }
-      setBlobNames(blobList);
-      setFilteredBlobNames(blobList); // Initialize filtered list
+      setBlobNames(blobList); // Oppdaterer state med blob-navnene
+      setFilteredBlobNames(blobList); // Initialiserer filtrert liste
     } catch (error) {
+      // Viser feilmelding hvis noe går galt
       setUploadStatus(`Failed to fetch blob names: ${(error as Error).message}`);
       setStatusType(MessageBarType.error);
     }
   };
 
+  // Funksjon for å trigge Azure-funksjonen, håper jeg har skrevet denne riktig
   const triggerAzureFunction = async (operation: string) => {
     try {
       const response = await fetch(
@@ -73,27 +83,29 @@ const Ingestion = () => {
         throw new Error("Failed to trigger the Azure Function");
       }
 
-      setUploadStatus("Indeksering vellykket!");
+      setUploadStatus("Indeksering vellykket!"); // Viser suksessmelding
       setStatusType(MessageBarType.success);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
-      setUploadStatus(`Indeksering feilet: ${errorMessage}`);
+      setUploadStatus(`Indeksering feilet: ${errorMessage}`); // Viser feilmelding
       setStatusType(MessageBarType.error);
     }
   };
 
+  // Funksjon for å laste opp fil til Blob Storage
   const uploadFile = async () => {
     if (!selectedFile) {
-      setUploadStatus("Velg fil først.");
+      setUploadStatus("Velg fil først."); // Ber brukeren velge en fil
       setStatusType(MessageBarType.warning);
       return;
     }
 
-    setUploadStatus("Laster opp...");
+    setUploadStatus("Laster opp..."); // Viser at opplasting pågår
     setStatusType(MessageBarType.info);
 
     try {
+      // Prøver å koble til Azure, håper dette fungerer
       const credential = new InteractiveBrowserCredential({
         clientId,
         tenantId,
@@ -104,24 +116,28 @@ const Ingestion = () => {
       const containerClient = blobServiceClient.getContainerClient("content");
       const blobClient = containerClient.getBlockBlobClient(selectedFile.name);
 
-      await blobClient.uploadData(selectedFile);
-      setUploadStatus("Data er lastet opp!");
+      await blobClient.uploadData(selectedFile); // Laster opp filen
+
+      setUploadStatus("Data er lastet opp!"); // Viser at opplastingen var vellykket
       setStatusType(MessageBarType.success);
-      fetchBlobNames(blobServiceClient);
+      fetchBlobNames(blobServiceClient); // Oppdaterer blob-listen
     } catch (error) {
+      // Viser feilmelding hvis opplastingen feiler
       setUploadStatus(`Opplasting feilet: ${(error as Error).message}`);
       setStatusType(MessageBarType.error);
     }
   };
 
+  // Funksjon for å slette valgte blobs
   const deleteSelectedBlobs = async () => {
     if (selectedBlobs.length === 0) {
-      setUploadStatus("Velg filer å slette.");
+      setUploadStatus("Velg filer å slette."); // Ber brukeren velge filer å slette
       setStatusType(MessageBarType.warning);
       return;
     }
 
     try {
+      // Kobler til Azure for å slette filer
       const credential = new InteractiveBrowserCredential({
         clientId,
         tenantId,
@@ -131,51 +147,58 @@ const Ingestion = () => {
       const blobServiceClient = new BlobServiceClient(blobStorageUrl, credential);
       const containerClient = blobServiceClient.getContainerClient("content");
 
+      // Går gjennom alle valgte blobs og sletter dem
       for (const blobName of selectedBlobs) {
         const blobClient = containerClient.getBlobClient(blobName);
         await blobClient.delete();
       }
 
-      setUploadStatus("Filer er nå slettet!");
+      setUploadStatus("Filer er nå slettet!"); // Viser at slettingen var vellykket
       setStatusType(MessageBarType.success);
-      fetchBlobNames(blobServiceClient);
-      setSelectedBlobs([]);
+      fetchBlobNames(blobServiceClient); // Oppdaterer blob-listen
+      setSelectedBlobs([]); // Tømmer listen over valgte blobs
     } catch (error) {
+      // Viser feilmelding hvis noe går galt under sletting
       setUploadStatus(`Feil ved sletting: ${(error as Error).message}`);
       setStatusType(MessageBarType.error);
     }
   };
 
+  // Funksjon for å håndtere søk i blob-listen
   const handleSearch = (event: any, newValue?: string) => {
     const query = newValue || "";
     setSearchQuery(query);
 
     if (query) {
+      // Filtrerer blob-navnene basert på søket
       const filtered = blobNames.filter((name) =>
         name.toLowerCase().includes(query.toLowerCase())
       );
-      setFilteredBlobNames(filtered);
+      setFilteredBlobNames(filtered); // Oppdaterer filtrert liste
     } else {
-      setFilteredBlobNames(blobNames);
+      setFilteredBlobNames(blobNames); // Viser alle hvis søkefeltet er tomt
     }
   };
 
+  // useEffect for å initialisere Blob-klienten når komponenten laster inn
   useEffect(() => {
     const initializeBlobClient = async () => {
+      // Prøver å koble til Azure, håper jeg har gjort dette riktig
       const credential = new InteractiveBrowserCredential({
         clientId,
         tenantId,
         redirectUri: window.location.origin,
       });
       const blobServiceClient = new BlobServiceClient(blobStorageUrl, credential);
-      await fetchBlobNames(blobServiceClient);
+      await fetchBlobNames(blobServiceClient); // Henter blob-navnene
     };
-    initializeBlobClient();
+    initializeBlobClient(); // Kaller funksjonen
   }, []);
 
+  // Returnerer JSX for komponenten
   return (
     <div style={{ display: "flex", gap: "20px", height: "100vh" }}>
-      {/* Sidebar for Blob Storage list and controls */}
+      {/* Sidebar for Blob Storage liste og kontroller */}
       <div
         className="sidebar"
         style={{
@@ -185,14 +208,14 @@ const Ingestion = () => {
           overflowY: "auto",
         }}
       >
-        {/* Profile Section */}
+        {/* Profilseksjon */}
         <div
           className="profileSection"
           style={{ marginBottom: "20px", textAlign: "center" }}
         >
-          {/* Replace "Your Name" with your actual name */}
-          <h2>Your Name</h2>
-          {/* Replace "path_to_cv_picture.jpg" with the actual path to your image */}
+          {/* Tror jeg må bytte ut "Navn" med mitt eget navn */}
+          <h2>Navn</h2>
+          {/* Her skal jeg legge inn bildet mitt */}
           <img
             src={LinnImage}
             alt="CV"
@@ -204,12 +227,12 @@ const Ingestion = () => {
               marginBottom: "10px",
             }}
           />
-          <p>Your placeholder text goes here.</p>
+          <p>Litt tekst her</p> {/* Kanskje skrive noe om meg selv */}
         </div>
 
-        {/* Upload Section */}
+        {/* Opplastingsseksjon */}
         <div className="uploadSection" style={{ marginBottom: "20px" }}>
-          {/* Toggle Header */}
+          {/* Klikkbar overskrift for å vise/skjule opplastingsseksjonen */}
           <div
             onClick={() => setIsUploadSectionOpen(!isUploadSectionOpen)}
             style={{
@@ -235,7 +258,7 @@ const Ingestion = () => {
           >
             <h3
               style={{
-                color: "#0078d4",
+                color: "#222222",
                 fontSize: "1.2em",
                 flexGrow: 1,
                 margin: 0,
@@ -243,19 +266,20 @@ const Ingestion = () => {
             >
               Last opp data
             </h3>
-            {/* Toggle Icon */}
+            {/* Ikon som endrer seg når seksjonen er åpen/lukket */}
             <Icon
               iconName={isUploadSectionOpen ? "ChevronDown" : "ChevronRight"}
               styles={{ root: { fontSize: "1em", marginLeft: "10px" } }}
             />
           </div>
 
-          {/* Content to Show/Hide */}
+          {/* Innhold som vises når opplastingsseksjonen er åpen */}
           {isUploadSectionOpen && (
             <div>
               <Label styles={{ root: { fontSize: "0.9em" } }}>
                 Last opp data til Blob Storage
               </Label>
+              {/* Input for å velge fil */}
               <input
                 type="file"
                 accept=".pdf"
@@ -267,35 +291,39 @@ const Ingestion = () => {
               )}
 
               <Stack tokens={{ childrenGap: 10 }} horizontal={false}>
+                {/* Knapp for å laste opp filen */}
                 <DefaultButton
                   text="Last opp fil"
                   onClick={uploadFile}
                   style={{
-                    backgroundColor: "#0078d4",
+                    backgroundColor: "#a9a9a9",
                     color: "#fff",
                     fontSize: "0.9em",
                   }}
                 />
+                {/* Knapp for å slette valgte filer */}
                 <DefaultButton
                   text="Slett filer"
                   onClick={deleteSelectedBlobs}
                   style={{
-                    backgroundColor: "#d83b01",
+                    backgroundColor: "#a9a9a9",
                     color: "#fff",
                     fontSize: "0.9em",
                   }}
                 />
+                {/* Knapp for å kjøre indekserer */}
                 <DefaultButton
                   text="Kjør indekserer"
                   onClick={() => triggerAzureFunction("custom-operation")}
                   style={{
-                    backgroundColor: "#107c10",
+                    backgroundColor: "#a9a9a9",
                     color: "#fff",
                     fontSize: "0.9em",
                   }}
                 />
               </Stack>
 
+              {/* Viser statusmelding etter opplasting/sletting */}
               {uploadStatus && (
                 <MessageBar
                   messageBarType={statusType}
@@ -308,21 +336,24 @@ const Ingestion = () => {
           )}
         </div>
 
-        {/* File List Section */}
+        {/* Fil-liste seksjon */}
         <div className="fileListSection">
-          <h3 style={{ color: "#0078d4", fontSize: "1.2em" }}>
+          <h3 style={{ color: "#222222", fontSize: "1.2em" }}>
             Filer i Blob Storage
           </h3>
+          {/* Søkeboks for å søke etter filer */}
           <SearchBox
             placeholder="Søk i Blob Storage"
             onChange={handleSearch}
             value={searchQuery}
             styles={{ root: { maxWidth: 300 } }}
           />
+          {/* Viser hvor mange dokumenter som er funnet */}
           <Text variant="medium" styles={{ root: { fontSize: "0.9em" } }}>
             Antall dokumenter: {filteredBlobNames.length}
           </Text>
 
+          {/* Liste over filer med mulighet for å velge dem */}
           <Stack tokens={{ childrenGap: 5 }} style={{ marginTop: "10px" }}>
             {filteredBlobNames.map((name, index) => (
               <div
@@ -347,7 +378,7 @@ const Ingestion = () => {
         </div>
       </div>
 
-      {/* Right-hand side displaying the project description and iframe */}
+      {/* Høyre side som viser prosjektbeskrivelse og iframe */}
       <div
         style={{
           flexGrow: 1,
@@ -357,7 +388,7 @@ const Ingestion = () => {
           overflow: "hidden",
         }}
       >
-        {/* Project Description Section */}
+        {/* Prosjektbeskrivelse seksjon */}
         <div
           className="projectDescription"
           style={{
@@ -378,7 +409,7 @@ const Ingestion = () => {
               alignItems: "center",
             }}
           >
-            {/* Example Icon */}
+            {/* Eksempelikon */}
             <Icon
               iconName="Info"
               styles={{ root: { fontSize: "1.5em", marginRight: "10px" } }}
@@ -386,12 +417,12 @@ const Ingestion = () => {
             Kort om prosjektet
           </h1>
           <p style={{ fontSize: "1.1em", lineHeight: "1.6em" }}>
-            {/* Your project description goes here */}
-            Dette er en litt annerledes versjon av en CV-nettside. Hvor jeg bruker React kode til å kalle på Ressurser i Azure, som blant annet Azure Storage Account og Azure AI Search.
+            {/* Her kan jeg skrive om prosjektet mitt */}
+            Dette er en litt annerledes versjon av en CV-nettside, hvor jeg bruker React-kode til å koble til ressurser i Azure, som blant annet Azure Storage Account og Azure AI Search.
           </p>
         </div>
 
-        {/* Iframe */}
+        {/* Iframe som viser søkegrensesnittet */}
         <div style={{ flexGrow: 1, overflow: "hidden" }}>
           <iframe
             src={`${process.env.PUBLIC_URL}/search.html`}
