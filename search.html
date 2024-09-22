@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <!-- Latest compiled and minified CSS (Bootstrap 3.3.7) -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <!-- Custom CSS -->
     <style>
         body {
@@ -40,15 +40,47 @@
         #facetPanel {
             display: none;
         }
+        /* Adjust the search field's width */
+        .navbar-form {
+            width: 40%; /* Initial width */
+            margin: 0 auto;
+            margin-top: 7px;
+        }
+        .azs-search-box {
+            width: 100%; /* Full width of navbar-form */
+            margin: 0 auto; /* Center the search box */
+        }
+        .azs-search-box input[type="text"] {
+            width: 100% !important; /* Ensure the input fills the input group */
+        }
+
+        /* Custom Media Query to Expand Search Bar and Align Button */
+        @media (min-width: 768px) {
+            .navbar-form {
+                width: 60% !important; /* Increase the form's width */
+            }
+            .azs-search-box .input-group {
+                width: 100%; /* Ensure the input group takes full width */
+            }
+            .azs-search-box .form-control {
+                width: 100% !important; /* Let the input take available space */
+            }
+            /* Remove fixed margin on the button */
+            .azs-search-box .input-group-btn:last-child > .btn, 
+            .azs-search-box .input-group-btn:last-child > .btn-group {
+                z-index: 2;
+                margin-left: 0; /* Remove any left margin */
+            }
+        }
     </style>
-    <title>Azure AI Search Demo</title>
+    <title>AI Search</title>
 </head>
 <body>
     <div id="app">
         <nav class="navbar navbar-inverse navbar-fixed-top">
             <div class="container-fluid container-custom">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="#">Azure AI Search</a>
+                    
                     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbarSearch" aria-expanded="false">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
@@ -57,7 +89,18 @@
                     </button>
                 </div>
                 <div id="navbarSearch" class="collapse navbar-collapse">
-                    <div id="searchBox" class="navbar-form navbar-right"></div>
+                    <form class="navbar-form" role="search">
+                        <div id="searchBox" class="azs-search-box">
+                            <!-- Ensure AzSearch.js generates the following structure:
+                                 <div class="input-group">
+                                     <input type="text" class="form-control" placeholder="Search">
+                                     <span class="input-group-btn">
+                                         <button class="btn btn-default" type="submit">Search</button>
+                                     </span>
+                                 </div>
+                            -->
+                        </div>
+                    </form>
                 </div>
             </div>
         </nav>
@@ -83,8 +126,6 @@
     <!-- AzSearch.js -->
     <script src="https://cdn.jsdelivr.net/npm/@microsoft/azsearch.js@0.0.21/dist/AzSearch.bundle.js"></script>
     <script>
-        // WARNING: For demonstration purposes only.
-
         // Initialize and connect to your search service
         var automagic = new AzSearch.Automagic({ index: "linn", queryKey: "HQLS1npkisHmVCgcYorPpl0aVhaPFW2shMQNelFEX9AzSeBMDIo9", service: "linnaisearch", dnsSuffix:"search.windows.net" });
         
@@ -103,9 +144,6 @@
         
         // Adds the search box
         automagic.addSearchBox("searchBox");
-        
-        // Adds a button to clear any applied filters (if any)
-        // automagic.addClearFiltersButton("clearFilters"); // Uncomment if using filters
     </script>
 </body>
 </html>
